@@ -1,0 +1,16 @@
+# Django and core dependencies
+Django==5.2.7
+djangorestframework==3.16.1
+django-cors-headers==4.9.0
+python-dotenv==1.0.0
+
+# Database (SQLite is included with Python, but if you need MySQL/PostgreSQL)
+# mysqlclient==2.2.0  # Uncomment if using MySQL
+# psycopg2-binary==2.9.9  # Uncomment if using PostgreSQL
+
+# Pillow for image handling (if using ImageField)
+Pillow==12.0.0
+
+# Other utilities
+pytz==2025.2
+
