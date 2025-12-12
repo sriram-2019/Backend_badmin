@@ -305,15 +305,15 @@ def create_superuser(venv_path, project_path):
     
     response = input("Do you want to create a superuser now? (y/n): ").strip().lower()
     if response == 'y':
-    python_exe = venv_path / "bin" / "python3"
-    if DJANGO_PROJECT_DIR == ".":
-        manage_py = project_path / "manage.py"
-        project_dir = project_path
-    else:
-        manage_py = project_path / DJANGO_PROJECT_DIR / "manage.py"
-        project_dir = project_path / DJANGO_PROJECT_DIR
-    
-    os.chdir(project_dir)
+        python_exe = venv_path / "bin" / "python3"
+        if DJANGO_PROJECT_DIR == ".":
+            manage_py = project_path / "manage.py"
+            project_dir = project_path
+        else:
+            manage_py = project_path / DJANGO_PROJECT_DIR / "manage.py"
+            project_dir = project_path / DJANGO_PROJECT_DIR
+        
+        os.chdir(project_dir)
         
         print("Running createsuperuser...")
         # This will be interactive
