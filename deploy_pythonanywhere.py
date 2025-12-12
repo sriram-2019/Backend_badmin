@@ -401,10 +401,29 @@ path = '/home/{username}/{PROJECT_NAME}'
 if path not in sys.path:
     sys.path.insert(0, path)
 
-# Activate virtual environment
-activate_this = '/home/{username}/{PROJECT_NAME}/.venv/bin/activate_this.py'
-with open(activate_this) as f:
-    exec(f.read(), {{'__file__': activate_this}})
+# Virtual environment activation (Python 3.13+ compatible)
+# Add virtual environment site-packages to path
+venv_path = '/home/{username}/{PROJECT_NAME}/.venv'
+import subprocess
+try:
+    # Get Python version from venv
+    result = subprocess.run(
+        [f'{{venv_path}}/bin/python3', '--version'],
+        capture_output=True,
+        text=True
+    )
+    version_str = result.stdout.strip().split()[1]
+    major, minor = map(int, version_str.split('.')[:2])
+    site_packages = f'{{venv_path}}/lib/python{{major}}.{{minor}}/site-packages'
+    if os.path.exists(site_packages) and site_packages not in sys.path:
+        sys.path.insert(0, site_packages)
+except:
+    # Fallback: try to find site-packages
+    import glob
+    site_packages_glob = f'{{venv_path}}/lib/python*/site-packages'
+    matches = glob.glob(site_packages_glob)
+    if matches and matches[0] not in sys.path:
+        sys.path.insert(0, matches[0])
 
 # Set Django settings module
 os.environ['DJANGO_SETTINGS_MODULE'] = 'backend.settings'
