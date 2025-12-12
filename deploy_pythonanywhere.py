@@ -263,9 +263,55 @@ def run_migrations(venv_path, project_path):
         print(stdout)
         return True
     else:
-        print_error(f"Migration failed: {stderr}")
-        print(stdout)
-        return False
+        # Check if it's a table already exists error
+        if "already exists" in stderr.lower() or "already exists" in stdout.lower():
+            print_warning("Migration error: Some tables already exist")
+            print("This usually means the database was partially migrated.")
+            print("\nOptions:")
+            print("1. Fake the problematic migration (if tables exist)")
+            print("2. Reset migrations (WARNING: Will lose data)")
+            
+            response = input("\nDo you want to fake the migration? (y/n): ").strip().lower()
+            if response == 'y':
+                # Try to identify which migration is failing
+                if "0011" in stderr or "0011" in stdout:
+                    print("Faking migration 0011...")
+                    fake_success, fake_stdout, fake_stderr = run_command(
+                        f"{python_exe} {manage_py} migrate registrations 0011 --fake", shell=True
+                    )
+                    if fake_success:
+                        print_success("Migration 0011 faked successfully")
+                        # Try running migrations again
+                        retry_success, retry_stdout, retry_stderr = run_command(
+                            f"{python_exe} {manage_py} migrate", shell=True
+                        )
+                        if retry_success:
+                            print_success("Remaining migrations completed")
+                            return True
+                    else:
+                        print_error(f"Failed to fake migration: {fake_stderr}")
+                
+                # Generic fake for all unapplied migrations
+                print("Attempting to fake all unapplied migrations...")
+                fake_all_success, fake_all_stdout, fake_all_stderr = run_command(
+                    f"{python_exe} {manage_py} migrate --fake", shell=True
+                )
+                if fake_all_success:
+                    print_success("Migrations faked successfully")
+                    return True
+                else:
+                    print_error("Failed to fake migrations")
+                    print(fake_all_stderr)
+            
+            print_error(f"Migration failed: {stderr}")
+            print(stdout)
+            print("\nTo fix manually, run:")
+            print(f"  {python_exe} {manage_py} migrate registrations 0011 --fake")
+            return False
+        else:
+            print_error(f"Migration failed: {stderr}")
+            print(stdout)
+            return False
 
 def collect_static_files(venv_path, project_path):
     """Collect static files"""
